@@ -3,12 +3,13 @@ import PropTypes from 'prop-types';
 import css from './Modal.module.css';
 
 const Modal = ({ largeImage, closeModal }) => {
-  const handleKeydown = e => {
-    if (e.code === 'Escape') {
-      closeModal();
-    }
-  };
+  
   useEffect(() => {
+    const handleKeydown = e => {
+      if (e.code === 'Escape') {
+        closeModal();
+      }
+    };
     window.addEventListener('keydown', handleKeydown);
 
     return () => {
