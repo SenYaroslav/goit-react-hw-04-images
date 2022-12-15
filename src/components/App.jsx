@@ -1,99 +1,66 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { fetchPictures } from 'services/picturesAPI';
 import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Button from './Button/Button';
 import Loader from './Loader/Loader';
 
-export class App extends Component {
-  state = {
-    page: 1,
-    pictures: [],
-    searchQuery: '',
-    isLoading: false,
-    isLoadMoreBtnShown: false,
-  };
+const App = () => {
+  const [page, setPage] = useState(1);
+  const [pictures, setPictures] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadMoreBtnShown, setIsLoadMoreBtnShown] = useState(false);
 
-  onSubmit = query => {
+  useEffect(() => {
+    if (searchQuery) {
+      setIsLoading(true);
+      fetchPictures(searchQuery, page)
+        .then(({ data: { hits } }) => {
+          if (hits.length === 12) {
+            setPictures(state => [...state, ...hits]);
+            setIsLoadMoreBtnShown(true);
+          }
+          if (hits.length < 12) {
+            setIsLoadMoreBtnShown(false);
+          }
+          if (hits.length === 0) {
+            setPictures([]);
+            alert('Bad search, try some else');
+          }
+        })
+        .catch(console.log)
+        .finally(() => setIsLoading(false));
+    }
+  }, [page, searchQuery]);
+
+  const onSubmit = query => {
     if (query === '') {
       alert('Please, fill the search form');
       return;
     }
-    this.setState({ searchQuery: query, page: 1 });
-  };
-
-  componentDidUpdate(prevProps, prevState) {
-    const prevQuery = prevState.searchQuery;
-    const prevPage = prevState.page;
-    const { searchQuery, page } = this.state;
-
-    if (prevPage !== page && prevQuery === searchQuery) {
-      this.setState({ isLoading: true });
-
-      fetchPictures(searchQuery, page)
-        .then(({ data: { hits } }) => {
-          if (hits.length === 12) {
-            this.setState(prevState => {
-              return {
-                pictures: [...prevState.pictures, ...hits],
-                isLoadMoreBtnShown: true,
-              };
-            });
-          }
-          if (hits.length < 12) {
-            this.setState({ isLoadMoreBtnShown: false });
-          }
-          if (hits.length === 0) {
-            this.setState({ pictures: [] });
-            alert('Bad search, try some else');
-          }
-        })
-        .catch(console.log)
-        .finally(() => this.setState({ isLoading: false }));
+    if (query !== searchQuery) {
+      setSearchQuery(query);
+      setPictures([]);
+      setPage(1);
+      return;
     }
-    if (prevQuery !== searchQuery) {
-      this.setState({ isLoading: true });
-
-      fetchPictures(searchQuery, page)
-        .then(({ data: { hits } }) => {
-          if (hits.length === 12) {
-            this.setState({ pictures: [...hits], isLoadMoreBtnShown: true });
-          }
-          if (hits.length < 12) {
-            this.setState({ isLoadMoreBtnShown: false });
-          }
-          if (hits.length === 0) {
-            this.setState({ pictures: [] });
-            alert('Bad search, try some else');
-          }
-        })
-        .catch(console.log)
-        .finally(() => this.setState({ isLoading: false }));
-    }
-  }
-
-  handlerLoadMoreBtn = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+    setSearchQuery(query);
+    setPage(1);
   };
 
-  onModalClose = e => {
-    if (e.currentTarget === e.target || e.code === 'Escape')
-      this.setState({ isModalOpen: false });
+  const handlerLoadMoreBtn = () => {
+    setPage(state => state + 1);
   };
 
-  render() {
-    const { isLoading, isLoadMoreBtnShown } = this.state;
-    return (
-      <div className="container">
-        <Searchbar onSubmit={this.onSubmit} />
-        <ImageGallery pictures={this.state.pictures} />
-        {isLoading && <Loader />}
-        {isLoadMoreBtnShown && (
-          <Button handlerLoadMoreBtn={this.handlerLoadMoreBtn} />
-        )}
-      </div>
-    );
-  }
-}
+  return (
+    <div className="container">
+      <Searchbar onSubmit={onSubmit} />
+      <ImageGallery pictures={pictures} />
+      {isLoading && <Loader />}
+      {isLoadMoreBtnShown && <Button handlerLoadMoreBtn={handlerLoadMoreBtn} />}
+    </div>
+  );
+};
+
+export default App;

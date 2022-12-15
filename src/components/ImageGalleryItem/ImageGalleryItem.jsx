@@ -1,38 +1,34 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import css from './ImageGalleryItem.module.css';
 import Modal from 'components/Modal/Modal';
 
-class ImageGalleryItem extends Component {
-  state = { largeImageURL: null };
+const ImageGalleryItem = ({ picture }) => {
+  const [largeImageURL, setLargeImageURL] = useState(null);
 
-  onImageClick = e => {
-    this.setState({ largeImageURL: e.currentTarget.dataset.action });
+  const onImageClick = e => {
+    setLargeImageURL(e.currentTarget.dataset.action);
   };
 
-  closeModal = () => {
-    this.setState({ largeImageURL: null });
+  const closeModal = () => {
+    setLargeImageURL(null);
   };
 
-  render() {
-    const { largeImageURL } = this.state;
-    const { picture } = this.props;
-    return (
-      <li className={css.gallery__item}>
-        <img
-          className={css.gallery__item_image}
-          src={picture.webformatURL}
-          alt={`Pic of ${picture.tags}`}
-          data-action={picture.largeImageURL}
-          onClick={this.onImageClick}
-        />
-        {largeImageURL && (
-          <Modal largeImage={largeImageURL} closeModal={this.closeModal} />
-        )}
-      </li>
-    );
-  }
-}
+  return (
+    <li className={css.gallery__item}>
+      <img
+        className={css.gallery__item_image}
+        src={picture.webformatURL}
+        alt={`Pic of ${picture.tags}`}
+        data-action={picture.largeImageURL}
+        onClick={onImageClick}
+      />
+      {largeImageURL && (
+        <Modal largeImage={largeImageURL} closeModal={closeModal} />
+      )}
+    </li>
+  );
+};
 
 export default ImageGalleryItem;
 
