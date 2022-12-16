@@ -39,13 +39,11 @@ const App = () => {
       alert('Please, fill the search form');
       return;
     }
-    if (query !== searchQuery) {
-      setSearchQuery(query);
-      setPictures([]);
-      setPage(1);
+    if (query === searchQuery) {
       return;
     }
     setSearchQuery(query);
+    setPictures([]);
     setPage(1);
   };
 
